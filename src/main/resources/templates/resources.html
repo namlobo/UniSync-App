@@ -1,10 +1,9 @@
 <!doctype html>
-<!-- resources.html displays the resource catalog in the MVC view layer, keeping presentation separate from logic. -->
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>UniSync Resources</title>
+  <title>UniSync - Campus Resource Catalog</title>
   <link rel="stylesheet" href="/ui.css">
 </head>
 <body>
@@ -12,56 +11,87 @@
     <div th:replace="~{fragments/sidebar :: sidebar}"></div>
     <main class="main">
       <div class="topbar">
-        <div>
-          <h1>Resources</h1>
-          <div class="muted"><span th:text="${count}">0</span> available listings</div>
+        <div class="page-header">
+          <h1>Campus Resource Catalog</h1>
+          <p th:text="${count + ' available listings on campus'}">0 listings available</p>
         </div>
-        <div class="row" style="max-width: 420px;">
-          <a class="pill" href="/ui/sell" style="text-decoration:none;">+ List Resource</a>
-          <a class="pill" href="/resources" style="text-decoration:none;">View JSON</a>
+        <div style="display: flex; gap: 10px;">
+          <a href="/ui/sell" class="btn btn-primary btn-sm">+ List Resource</a>
         </div>
       </div>
 
-      <div th:if="${param.error}" class="flash bad" th:text="${param.error[0]}">Error</div>
-      <div th:if="${param.success}" class="flash ok" th:text="${param.success[0]}">Success</div>
+      <div th:if="${error}" class="flash bad">
+        <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span th:text="${error}">Error</span>
+      </div>
+      <div th:if="${success}" class="flash ok">
+        <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span th:text="${success}">Success</span>
+      </div>
 
-      <div class="grid">
-        <div class="card" th:each="r : ${resources}">
-          <div class="title">
-            <h1 th:text="${r.title}" style="font-size:16px; margin:0;">Title</h1>
-            <span class="pill">ID: <span th:text="${r.resourceId}">0</span></span>
-          </div>
-          <div class="muted" style="margin-top:8px;" th:text="${r.description} ?: 'No description provided.'">Description</div>
-          <div class="row" style="margin-top:10px;">
-            <span class="pill">Status: <span th:text="${r.status}">AVAILABLE</span></span>
-            <span class="pill">Type: <span th:text="${r.listingType}">SELL</span></span>
-            <span class="pill">Condition: <span th:text="${r.condition}">Good</span></span>
-            <span class="pill" th:if="${r.listingType.name() == 'SELL'}">Price: <span th:text="${r.price}">0</span></span>
-          </div>
-
-          <div class="row" style="margin-top:10px;">
-            <a class="pill" th:href="@{/ui/reviews(resourceId=${r.resourceId})}" style="text-decoration:none;">Reviews</a>
-          </div>
-
-          <!-- Lend/Borrow action -->
-          <form th:if="${r.listingType.name() == 'LEND'}" method="post" action="/ui/borrow" style="margin-top:12px;">
-            <input type="hidden" name="resourceId" th:value="${r.resourceId}">
-            <input type="hidden" name="lenderId" th:value="${r.owner != null ? r.owner.id : ''}">
-            <div class="row">
-              <div>
-                <label>Start</label>
-                <input type="date" name="startDate" th:value="${today}" required>
-              </div>
-              <div>
-                <label>End</label>
-                <input type="date" name="endDate" th:value="${week}" required>
-              </div>
+      <div class="resource-grid" th:if="${resources != null and !resources.isEmpty()}">
+        <div class="res-card" th:each="r : ${resources}">
+          <div>
+            <div class="res-header">
+              <span class="res-title" th:text="${r.title}">Resource Title</span>
+              <span th:if="${r.listingType.name() == 'SELL'}" class="badge badge-sell">SELL</span>
+              <span th:if="${r.listingType.name() == 'LEND'}" class="badge badge-lend">LEND</span>
+              <span th:if="${r.listingType.name() == 'BARTER'}" class="badge badge-barter">BARTER</span>
             </div>
-            <div style="margin-top:10px;">
-              <button type="submit">Borrow</button>
+            
+            <p class="res-desc" th:text="${r.description != null and !r.description.isEmpty() ? r.description : 'No detailed description provided.'}">Description</p>
+            
+            <div class="res-meta">
+              <span class="badge badge-cat" th:text="${r.category.displayName}">Category</span>
+              <span class="badge badge-cat" th:text="${'Condition: ' + r.condition}">Good</span>
+              <span class="badge badge-available">AVAILABLE</span>
+              <span th:if="${r.listingType.name() == 'SELL'}" class="price-tag" th:text="${'$' + #numbers.formatDecimal(r.price, 1, 2)}">$0.00</span>
             </div>
-          </form>
+          </div>
+
+          <div>
+            <div class="res-owner">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+              <span th:text="${'Seller: ' + r.owner.name + ' (' + r.owner.department + ')'}">Owner</span>
+            </div>
+
+            <!-- Actions -->
+            <div style="margin-top: 14px; display: flex; gap: 8px;">
+              <a th:href="@{/ui/reviews(resourceId=${r.resourceId})}" class="btn btn-secondary btn-sm" style="flex:1;">
+                ★ Reviews
+              </a>
+
+              <form th:if="${r.listingType.name() == 'SELL'}" method="post" action="/ui/buy" style="flex:1;">
+                <input type="hidden" name="resourceId" th:value="${r.resourceId}">
+                <button type="submit" class="btn btn-primary btn-sm btn-full">Buy Now</button>
+              </form>
+            </div>
+
+            <!-- Borrow form if LEND -->
+            <form th:if="${r.listingType.name() == 'LEND'}" method="post" action="/ui/borrow" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);">
+              <input type="hidden" name="resourceId" th:value="${r.resourceId}">
+              <input type="hidden" name="lenderId" th:value="${r.owner != null ? r.owner.id : ''}">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                <div>
+                  <label style="margin: 0 0 4px; font-size: 11px;">Start Date</label>
+                  <input type="date" name="startDate" th:value="${today}" required style="padding: 6px 10px; font-size: 12px;">
+                </div>
+                <div>
+                  <label style="margin: 0 0 4px; font-size: 11px;">End Date</label>
+                  <input type="date" name="endDate" th:value="${week}" required style="padding: 6px 10px; font-size: 12px;">
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm btn-full">Request Borrow</button>
+            </form>
+          </div>
         </div>
+      </div>
+
+      <div class="empty-state card" th:if="${resources == null or resources.isEmpty()}">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+        <h3>No Resources Listed Yet</h3>
+        <p>Be the first student to list a textbook or item on UniSync!</p>
+        <a href="/ui/sell" class="btn btn-primary" style="margin-top: 16px;">+ List a Resource Now</a>
       </div>
     </main>
   </div>

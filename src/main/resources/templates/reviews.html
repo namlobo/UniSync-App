@@ -1,73 +1,106 @@
 <!doctype html>
-<!-- reviews.html renders review selection, submission, and listing in the MVC view layer. -->
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>UniSync Reviews</title>
+  <title>UniSync - Reviews & Ratings</title>
   <link rel="stylesheet" href="/ui.css">
-  <style>
-    .review { padding: 12px; border:1px solid var(--line); border-radius: 16px; background: rgba(15,23,42,.45); }
-    .stars { font-weight: 700; letter-spacing: .5px; }
-  </style>
 </head>
 <body>
   <div class="shell">
     <div th:replace="~{fragments/sidebar :: sidebar}"></div>
     <main class="main">
       <div class="topbar">
-        <div>
-          <h1>Reviews</h1>
-          <div class="muted">Submit and view reviews for a resource</div>
+        <div class="page-header">
+          <h1>Verified Resource Reviews</h1>
+          <p>Rate and write reviews for items from your completed purchases or loans</p>
         </div>
       </div>
 
-      <div th:if="${error}" class="flash bad" th:text="${error}">Error</div>
-      <div th:if="${success}" class="flash ok" th:text="${success}">Success</div>
+      <div th:if="${error}" class="flash bad">
+        <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span th:text="${error}">Error</span>
+      </div>
+      <div th:if="${success}" class="flash ok">
+        <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span th:text="${success}">Success</span>
+      </div>
 
-      <div class="grid" style="grid-template-columns: 1fr 1fr;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; margin-bottom: 28px;">
+        <!-- Select Resource Card -->
         <div class="card">
-          <h1 style="font-size:16px;">Select Resource</h1>
+          <h2 style="font-size: 18px; font-weight: 800; margin-bottom: 16px; color: #fff;">1. Choose Eligible Item</h2>
           <form method="get" action="/ui/reviews">
-            <label>Resource</label>
-            <select name="resourceId" required>
-              <option value="" disabled th:selected="${resourceId == null}">Choose...</option>
-              <option th:each="r : ${resources}" th:value="${r.resourceId}" th:text="${r.title}" th:selected="${resourceId != null && resourceId == r.resourceId}">Resource</option>
+            <label>Reviewable Resources</label>
+            <select name="resourceId" required onchange="this.form.submit()">
+              <option value="" disabled th:selected="${resourceId == null}">Select from completed items...</option>
+              <option th:each="r : ${resources}" th:value="${r.resourceId}" th:text="${r.title + ' (' + r.category.displayName + ')'}" th:selected="${resourceId != null && resourceId == r.resourceId}">Resource</option>
             </select>
-            <div style="margin-top:12px;">
-              <button type="submit">View Reviews</button>
+            
+            <div th:if="${resources == null or resources.isEmpty()}" style="margin-top: 14px; font-size: 12.5px; color: var(--text-muted);">
+              💡 You can review resources after completing a purchase or loan transaction on UniSync.
             </div>
           </form>
         </div>
 
+        <!-- Write Review Card -->
         <div class="card">
-          <h1 style="font-size:16px;">Write Review</h1>
+          <h2 style="font-size: 18px; font-weight: 800; margin-bottom: 16px; color: #fff;">2. Submit Review</h2>
           <form method="post" action="/ui/reviews">
             <input type="hidden" name="resourceId" th:value="${resourceId}">
-            <label>Rating (1-5)</label>
-            <input name="rating" type="number" min="1" max="5" value="5" required>
-            <label>Comment</label>
-            <textarea name="comment" placeholder="What did you think?"></textarea>
-            <div style="margin-top:12px;">
-              <button type="submit" th:disabled="${resourceId == null}">Submit</button>
-            </div>
-            <div class="muted" style="margin-top:8px;" th:if="${resourceId == null}">Pick a resource first.</div>
+            
+            <label>Rating (1 to 5 Stars)</label>
+            <select name="rating" required th:disabled="${resourceId == null}">
+              <option value="5" selected>★★★★★ (5 - Excellent)</option>
+              <option value="4">★★★★☆ (4 - Good)</option>
+              <option value="3">★★★☆☆ (3 - Average)</option>
+              <option value="2">★★☆☆☆ (2 - Below Average)</option>
+              <option value="1">★☆☆☆☆ (1 - Poor)</option>
+            </select>
+
+            <label>Detailed Feedback / Review</label>
+            <textarea name="comment" placeholder="Describe condition accuracy, seller response time, or helpfulness..." th:disabled="${resourceId == null}"></textarea>
+
+            <button type="submit" class="btn btn-primary btn-full" style="margin-top: 16px;" th:disabled="${resourceId == null}">
+              Publish Verified Review
+            </button>
           </form>
         </div>
       </div>
 
-      <div class="card" style="margin-top:12px;">
-        <div class="title">
-          <h1 style="font-size:16px;">Reviews</h1>
-          <span class="muted" th:text="${resourceId != null ? ('Resource ID: ' + resourceId) : 'No resource selected'}">No resource</span>
+      <!-- Rating Summary & Review Feed -->
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 16px;">
+          <div>
+            <h2 style="font-size: 18px; font-weight: 800; color: #fff;">Community Reviews</h2>
+            <p style="font-size: 13px; color: var(--text-muted);" th:if="${resourceId != null}" th:text="${'Showing reviews for selected resource (ID #' + resourceId + ')'}">Selected item reviews</p>
+          </div>
+          
+          <div th:if="${resourceId != null}" style="text-align: right;">
+            <div style="font-size: 24px; font-weight: 800; color: #fbbf24;" th:text="${#numbers.formatDecimal(averageRating, 1, 1) + ' ★'}">0.0 ★</div>
+            <div style="font-size: 12px; color: var(--text-muted);" th:text="${reviewCount + ' verified review(s)'}">0 reviews</div>
+          </div>
         </div>
 
-        <div th:if="${#lists.isEmpty(reviews)}" class="muted" style="margin-top:10px;">No reviews to show.</div>
+        <div class="empty-state" th:if="${resourceId == null}">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+          <h3>Select an Item Above</h3>
+          <p>Choose an eligible resource from the dropdown to see rating stats and reviews.</p>
+        </div>
 
-        <div class="grid" style="margin-top:12px;">
-          <div class="review" th:each="rv : ${reviews}">
-            <div class="stars">Rating: <span th:text="${rv.rating}">5</span>/5</div>
-            <div class="muted" style="margin-top:6px;" th:text="${rv.comment} ?: '(no comment)'">(no comment)</div>
+        <div class="empty-state" th:if="${resourceId != null and (reviews == null or reviews.isEmpty())}">
+          <h3>No Reviews Submitted Yet</h3>
+          <p>Be the first buyer or borrower to submit a rating for this resource!</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;" th:if="${reviews != null and !reviews.isEmpty()}">
+          <div th:each="rv : ${reviews}" class="card" style="background: rgba(11, 18, 32, 0.6); padding: 18px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <div class="rating-stars" th:text="${'★'.repeat(rv.rating)}">★★★★★</div>
+              <span class="badge badge-cat" th:text="${'Rating: ' + rv.rating + '/5'}">5/5</span>
+            </div>
+            <p style="font-size: 13.5px; color: var(--text); font-style: italic; margin-bottom: 12px;" th:text="${rv.comment != null and !rv.comment.isEmpty() ? '“' + rv.comment + '”' : '(No written comment)'}">(comment)</p>
+            <div style="font-size: 11.5px; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 8px;" th:text="${'Reviewer: ' + rv.reviewer.id}">Reviewer</div>
           </div>
         </div>
       </div>

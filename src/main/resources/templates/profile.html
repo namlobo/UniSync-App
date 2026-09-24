@@ -1,10 +1,9 @@
 <!doctype html>
-<!-- profile.html renders logged-in student details as a dedicated MVC view. -->
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>UniSync Profile</title>
+  <title>UniSync - Student Profile</title>
   <link rel="stylesheet" href="/ui.css">
 </head>
 <body>
@@ -12,47 +11,51 @@
     <div th:replace="~{fragments/sidebar :: sidebar}"></div>
     <main class="main">
       <div class="topbar">
-        <div>
-          <h1>Profile</h1>
-          <div class="muted">Your account details</div>
+        <div class="page-header">
+          <h1>Student Account Profile</h1>
+          <p>Verified student identity details and account status</p>
         </div>
       </div>
 
-      <div class="card" th:if="${student != null}">
-        <div class="row">
+      <div class="card" th:if="${student != null}" style="max-width: 800px;">
+        <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border);">
+          <div class="avatar" style="width: 64px; height: 64px; font-size: 26px;" th:text="${student.name != null ? student.name.substring(0,1).toUpperCase() : 'U'}">U</div>
           <div>
-            <label>SRN</label>
+            <h2 style="font-size: 22px; font-weight: 800; color: #fff;" th:text="${student.name}">Student Name</h2>
+            <div style="font-size: 13px; color: var(--text-muted);" th:text="${'SRN: ' + student.id + ' • Dept: ' + student.department}">SRN • Dept</div>
+          </div>
+          <div style="margin-left: auto;">
+            <span th:if="${!student.suspended}" class="badge badge-available">ACTIVE ACCOUNT</span>
+            <span th:if="${student.suspended}" class="badge badge-sold">SUSPENDED</span>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+          <div>
+            <label>Student SRN / ID</label>
             <input th:value="${student.id}" readonly>
           </div>
           <div>
-            <label>Name</label>
+            <label>Full Name</label>
             <input th:value="${student.name}" readonly>
           </div>
-        </div>
-        <div class="row">
           <div>
-            <label>Email</label>
+            <label>Email Address</label>
             <input th:value="${student.email}" readonly>
           </div>
           <div>
-            <label>Phone</label>
+            <label>Phone Number</label>
             <input th:value="${student.phone}" readonly>
           </div>
-        </div>
-        <div class="row">
           <div>
-            <label>Department</label>
+            <label>Academic Department</label>
             <input th:value="${student.department}" readonly>
           </div>
           <div>
-            <label>Suspended</label>
-            <input th:value="${student.suspended}" readonly>
+            <label>Account Status</label>
+            <input th:value="${student.suspended ? 'Suspended' : 'Active (Good Standing)'}" readonly>
           </div>
         </div>
-      </div>
-
-      <div class="card" th:if="${student == null}">
-        <div class="muted">No user in session.</div>
       </div>
     </main>
   </div>

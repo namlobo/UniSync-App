@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>UniSync Lend/Borrow</title>
+  <title>UniSync - Borrow Hub</title>
   <link rel="stylesheet" href="/ui.css">
 </head>
 <body>
@@ -11,49 +11,75 @@
     <div th:replace="~{fragments/sidebar :: sidebar}"></div>
     <main class="main">
       <div class="topbar">
-        <div>
-          <h1>Lend / Borrow</h1>
-          <div class="muted"><span th:text="${count}">0</span> lend listings available</div>
+        <div class="page-header">
+          <h1>Borrow Hub</h1>
+          <p th:text="${count + ' items available for temporary loan'}">0 items available to borrow</p>
         </div>
       </div>
 
-      <div th:if="${error}" class="flash bad" th:text="${error}">Error</div>
-      <div th:if="${success}" class="flash ok" th:text="${success}">Success</div>
+      <div th:if="${error}" class="flash bad">
+        <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span th:text="${error}">Error</span>
+      </div>
+      <div th:if="${success}" class="flash ok">
+        <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span th:text="${success}">Success</span>
+      </div>
 
-      <div class="grid">
-        <div class="card" th:each="r : ${resources}">
-          <div class="title">
-            <h1 th:text="${r.title}" style="font-size:16px; margin:0;">Title</h1>
-            <span class="pill">ID: <span th:text="${r.resourceId}">0</span></span>
-          </div>
-          <div class="muted" style="margin-top:8px;" th:text="${r.description} ?: 'No description provided.'">Description</div>
-          <div class="row" style="margin-top:10px;">
-            <span class="pill">Status: <span th:text="${r.status}">AVAILABLE</span></span>
-            <span class="pill">Type: <span th:text="${r.listingType}">LEND</span></span>
-            <span class="pill">Condition: <span th:text="${r.condition}">Good</span></span>
+      <div class="resource-grid" th:if="${resources != null and !resources.isEmpty()}">
+        <div class="res-card" th:each="r : ${resources}">
+          <div>
+            <div class="res-header">
+              <span class="res-title" th:text="${r.title}">Title</span>
+              <span class="badge badge-lend">LEND</span>
+            </div>
+            
+            <p class="res-desc" th:text="${r.description != null and !r.description.isEmpty() ? r.description : 'No description provided.'}">Description</p>
+            
+            <div class="res-meta">
+              <span class="badge badge-cat" th:text="${r.category.displayName}">Category</span>
+              <span class="badge badge-cat" th:text="${'Condition: ' + r.condition}">Good</span>
+              <span class="badge badge-available">AVAILABLE</span>
+            </div>
           </div>
 
-          <form method="post" action="/ui/borrow" style="margin-top:12px;">
-            <input type="hidden" name="resourceId" th:value="${r.resourceId}">
-            <input type="hidden" name="lenderId" th:value="${r.owner != null ? r.owner.id : ''}">
-            <div class="row">
-              <div>
-                <label>Start</label>
-                <input type="date" name="startDate" th:value="${today}" required>
-              </div>
-              <div>
-                <label>End</label>
-                <input type="date" name="endDate" th:value="${week}" required>
-              </div>
+          <div>
+            <div class="res-owner">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+              <span th:text="${'Lender: ' + r.owner.name + ' (' + r.owner.department + ')'}">Owner</span>
             </div>
-            <div style="margin-top:10px;">
-              <button type="submit">Borrow</button>
-            </div>
-          </form>
+
+            <form method="post" action="/ui/borrow" style="margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border);">
+              <input type="hidden" name="resourceId" th:value="${r.resourceId}">
+              <input type="hidden" name="lenderId" th:value="${r.owner != null ? r.owner.id : ''}">
+              
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+                <div>
+                  <label style="margin:0 0 4px; font-size: 11.5px;">Borrow Start</label>
+                  <input type="date" name="startDate" th:value="${today}" required style="padding: 8px 10px; font-size: 12.5px;">
+                </div>
+                <div>
+                  <label style="margin:0 0 4px; font-size: 11.5px;">Expected Return</label>
+                  <input type="date" name="endDate" th:value="${week}" required style="padding: 8px 10px; font-size: 12.5px;">
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-secondary btn-full">
+                <svg xmlns="http://www.w3.org/2000/svg" style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                Request Borrow Loan
+              </button>
+            </form>
+          </div>
         </div>
+      </div>
+
+      <div class="empty-state card" th:if="${resources == null or resources.isEmpty()}">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+        <h3>No Items Available To Borrow</h3>
+        <p>Check back later or browse all campus resources.</p>
+        <a href="/ui/resources" class="btn btn-secondary" style="margin-top: 16px;">Browse All Resources</a>
       </div>
     </main>
   </div>
 </body>
 </html>
-
