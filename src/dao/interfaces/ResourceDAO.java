@@ -15,6 +15,10 @@ public interface ResourceDAO {
 
     List<Resource> findAvailableResources();
 
+    List<Resource> findAvailableResourcesExcludingOwner(String ownerId);
+
+    List<Resource> findReviewableResourcesByStudent(String studentId);
+
     void update(Resource resource);
 
     void delete(int id);

@@ -55,6 +55,14 @@ public class ResourceService {
         return resourceDAO.findAvailableResources();
     }
 
+    public List<Resource> getAvailableResourcesExcludingOwner(String ownerId) {
+        return resourceDAO.findAvailableResourcesExcludingOwner(ownerId);
+    }
+
+    public List<Resource> getReviewableResources(String studentId) {
+        return resourceDAO.findReviewableResourcesByStudent(studentId);
+    }
+
     // Changes the domain state and persists it, following Information Expert and SRP.
     public void markAsSold(Resource resource) {
         resource.markSold();

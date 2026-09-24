@@ -6,19 +6,14 @@ import java.sql.SQLException;
 
 public class DBConnection {
 
-    private static Connection connection;
-
     private DBConnection() {
     }
 
     public static Connection getConnection() throws SQLException {
-        if (connection == null || connection.isClosed()) {
-            String url = cfg("unisync.db.url", "UNISYNC_DB_URL", "jdbc:mysql://localhost:3306/unisync");
-            String user = cfg("unisync.db.user", "UNISYNC_DB_USER", "root");
-            String pass = cfg("unisync.db.password", "UNISYNC_DB_PASSWORD", "robthebobber3090$11");
-            connection = DriverManager.getConnection(url, user, pass);
-        }
-        return connection;
+        String url = cfg("unisync.db.url", "UNISYNC_DB_URL", "jdbc:mysql://localhost:3306/unisync");
+        String user = cfg("unisync.db.user", "UNISYNC_DB_USER", "root");
+        String pass = cfg("unisync.db.password", "UNISYNC_DB_PASSWORD", "");
+        return DriverManager.getConnection(url, user, pass);
     }
 
     private static String cfg(String sysPropKey, String envKey, String defaultValue) {

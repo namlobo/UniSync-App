@@ -57,6 +57,27 @@ public class Resource {
         this.price = price;
     }
 
+    public Resource(int resourceId,
+                    String title,
+                    String description,
+                    String condition,
+                    ResourceStatus status,
+                    ListingType listingType,
+                    double price,
+                    Student owner,
+                    Category category) {
+
+        this.resourceId = resourceId;
+        this.title = title;
+        this.description = description;
+        this.condition = condition;
+        this.listingType = listingType;
+        this.owner = owner;
+        this.category = category;
+        this.status = status;
+        this.price = price;
+    }
+
     public int getResourceId() {
         return resourceId;
     }
