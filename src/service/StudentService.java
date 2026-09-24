@@ -82,4 +82,8 @@ public class StudentService {
     public void updateStudent(Student student) {
         studentDAO.update(student);
     }
+
+    public void removeStudent(String studentId) {
+        studentDAO.delete(studentId);
+    }
 }

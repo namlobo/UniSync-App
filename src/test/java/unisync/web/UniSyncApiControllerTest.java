@@ -8,13 +8,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import service.ResourceService;
 import service.StudentService;
 import service.TransactionService;
+import service.AdminService;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = UniSyncApiController.class)
-@Import({StudentService.class, ResourceService.class, TransactionService.class})
+@Import({StudentService.class, ResourceService.class, TransactionService.class, AdminService.class})
 class UniSyncApiControllerTest {
 
     @Autowired

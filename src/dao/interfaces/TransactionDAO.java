@@ -12,6 +12,11 @@ public interface TransactionDAO {
     void insertLendBorrow(int transactionId, int resourceId, String lenderId, String borrowerId,
                           java.time.LocalDate startDate, java.time.LocalDate endDate, double penalty);
 
+    int createBuySellTransactionAtomic(int resourceId, String buyerId);
+
+    int createLendBorrowTransactionAtomic(int resourceId, String borrowerId,
+                                          java.time.LocalDate startDate, java.time.LocalDate endDate);
+
     List<Transaction> findAll();
 
     void updateStatus(int transactionId, String status);
@@ -21,4 +26,6 @@ public interface TransactionDAO {
     List<dao.dto.BoughtItem> findBoughtByBuyer(String buyerId);
 
     void completeLendBorrow(int transactionId);
+
+    void completeLendBorrow(int transactionId, String borrowerId);
 }

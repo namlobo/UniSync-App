@@ -9,5 +9,13 @@ public interface ReviewDAO {
 
     void save(Review review);
 
+    void upsert(Review review);
+
     List<Review> findByResource(int resourceId);
+
+    boolean canReviewResource(String reviewerId, int resourceId);
+
+    double averageRatingForResource(int resourceId);
+
+    int reviewCountForResource(int resourceId);
 }

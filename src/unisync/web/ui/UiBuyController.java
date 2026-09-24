@@ -31,8 +31,13 @@ public class UiBuyController {
     @GetMapping("/ui/buy")
     public String buy(@RequestParam(value = "error", required = false) String error,
                       @RequestParam(value = "success", required = false) String success,
+                      HttpSession session,
                       Model model) {
-        List<Resource> all = resourceService.getAvailableResources();
+        Object u = session.getAttribute(UiSession.CURRENT_USER);
+        Student buyer = (u instanceof Student s) ? s : null;
+        List<Resource> all = buyer == null
+                ? resourceService.getAvailableResources()
+                : resourceService.getAvailableResourcesExcludingOwner(buyer.getId());
         List<Resource> sellOnly = new ArrayList<>();
         for (Resource r : all) {
             if (r.getListingType() == ListingType.SELL) {
@@ -56,16 +61,7 @@ public class UiBuyController {
         }
 
         try {
-            Resource r = resourceService.getResourceById(resourceId);
-            
-            // 🔥 Validate price before purchase
-            if (r.getPrice() <= 0) {
-                return "redirect:/ui/buy?error=" + enc("Invalid resource price. Contact seller.");
-            }
-            
-            String sellerId = r.getOwner() != null ? r.getOwner().getId() : "";
-            double price = r.getPrice();
-            transactionService.createBuySellTransaction(resourceId, sellerId, buyer.getId(), price);
+            transactionService.buyResource(resourceId, buyer.getId());
             return "redirect:/ui/transactions?success=" + enc("Purchase recorded");
         } catch (Exception e) {
             return "redirect:/ui/buy?error=" + enc(e.getMessage() == null ? "Buy failed" : e.getMessage());

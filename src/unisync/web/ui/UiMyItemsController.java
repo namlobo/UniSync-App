@@ -41,7 +41,7 @@ public class UiMyItemsController {
     public String returnItem(@RequestParam int transactionId, HttpSession session) {
         Student me = current(session);
         try {
-            transactionService.returnBorrowedItem(transactionId);
+            transactionService.returnBorrowedItem(transactionId, me.getId());
             return "redirect:/ui/my-items?success=" + enc("Returned successfully");
         } catch (Exception e) {
             return "redirect:/ui/my-items?error=" + enc(e.getMessage() == null ? "Return failed" : e.getMessage());

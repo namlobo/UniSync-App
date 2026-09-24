@@ -21,7 +21,7 @@ public class UiBorrowController {
 
     @PostMapping("/ui/borrow")
     public String borrow(@RequestParam int resourceId,
-                         @RequestParam String lenderId,
+                         @RequestParam(required = false) String lenderId,
                          @RequestParam String startDate,
                          @RequestParam String endDate,
                          HttpSession session) {

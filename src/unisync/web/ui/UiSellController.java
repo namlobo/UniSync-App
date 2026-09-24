@@ -10,6 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import service.CategoryService;
 import service.ResourceService;
 
 import java.net.URLEncoder;
@@ -19,15 +20,18 @@ import java.nio.charset.StandardCharsets;
 public class UiSellController {
 
     private final ResourceService resourceService;
+    private final CategoryService categoryService;
 
-    public UiSellController(ResourceService resourceService) {
+    public UiSellController(ResourceService resourceService, CategoryService categoryService) {
         this.resourceService = resourceService;
+        this.categoryService = categoryService;
     }
 
     @GetMapping("/ui/sell")
     public String sellForm(@RequestParam(value = "error", required = false) String error,
                            @RequestParam(value = "success", required = false) String success,
                            Model model) {
+        model.addAttribute("categories", categoryService.getAllCategories());
         model.addAttribute("error", error);
         model.addAttribute("success", success);
         return "sell";
@@ -65,7 +69,7 @@ public class UiSellController {
                     new Category(categoryId, "", "")
             );
             resourceService.addResource(resource);
-            return "redirect:/ui/resources?success=" + enc("Resource listed");
+            return "redirect:/ui/resources?success=" + enc("Resource listed successfully!");
         } catch (IllegalArgumentException e) {
             return "redirect:/ui/sell?error=" + enc(e.getMessage());
         } catch (Exception e) {
